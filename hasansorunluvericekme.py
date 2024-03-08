@@ -29,7 +29,7 @@ CHAT_ID = '-4157001586'  # Kanal için "@channelusername" şeklinde de kullanıl
 payload = {}
 headers = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0 SEB',
-  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,/;q=0.8',
   'Accept-Language': 'tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3',
   'Accept-Encoding': 'gzip, deflate, br',
   'Referer': 'https://www.decoverse.com/artema-samba-a45680sta-3f-surgulu-el-dusu-takimi-krom/',
@@ -44,7 +44,7 @@ headers = {
 }
 
 
-df_kodlar = pd.read_excel('listesiDeco.xlsx')['KOD'].to_list()
+df_kodlar = pd.read_excel('Olmayan Kodlar.xlsx')['KOD'].to_list()
 
 
 for kod in df_kodlar:
@@ -54,7 +54,9 @@ for kod in df_kodlar:
         response = requests.get(url, headers=headers)
 
         if response.status_code != 200:
-            asyncio.run(send_message(BOT_TOKEN, CHAT_ID, f"Error {response.status_code} for URL: {url}"))
+            try:
+                asyncio.run(send_message(BOT_TOKEN, CHAT_ID, f"Error {response.status_code} for URL: {url}"))
+            except Exception as e: pass
             continue
         
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -74,15 +76,18 @@ for kod in df_kodlar:
                     ürünler.append(ürün)
                 break
     except Exception as e:
-        asyncio.run(send_message(BOT_TOKEN, CHAT_ID, f"Exception occurred: {str(e)}"))
+        print(f"Exception occurred: {str(e)}")
+        try:
+            asyncio.run(send_message(BOT_TOKEN, CHAT_ID, f"Exception occurred: {str(e)}"))
+        except Exception as e: pass
         continue
 
 
 df=pd.DataFrame(ürünler)
-df.to_excel("decoverse_fiyatlar.xlsx", index=False)
+df.to_excel("decoverse_fiyatlar2.xlsx", index=False)
 
 # Göndermek istediğiniz Excel dosyasının yolu
-EXCEL_FILE_PATH = 'decoverse_fiyatlar.xlsx'
+EXCEL_FILE_PATH = 'decoverse_fiyatlar2.xlsx'
 
 # Fonksiyonu çağır
 asyncio.run(send_excel_file(EXCEL_FILE_PATH, BOT_TOKEN, CHAT_ID))
